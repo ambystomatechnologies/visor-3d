@@ -5,3 +5,6 @@ Respaldo/
 .agents/
 start.bat
 publicar_a_github.bat
+
+# Modelos pesados locales (>100MB)
+Piojo de foca.glb

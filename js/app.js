@@ -1,8 +1,8 @@
-import { Viewer } from './viewer.js?v=3.3';
-import { Slicer } from './slicer.js?v=3.3';
-import { ModelLoader } from './loader.js?v=3.3';
-import { createSampleBone } from './sampleBone.js?v=3.3';
-import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=3.3';
+import { Viewer } from './viewer.js?v=4.0';
+import { Slicer } from './slicer.js?v=4.0';
+import { ModelLoader } from './loader.js?v=4.0';
+import { createSampleBone } from './sampleBone.js?v=4.0';
+import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.0';
 
 class App {
   constructor() {
@@ -376,7 +376,6 @@ class App {
       e.stopPropagation();
       const active = this.viewer.toggleTurntable();
       this.updateTurntableButtonUI(active);
-      this.showToast(active ? "Mesa giratoria iniciada (haz clic en pantalla para detener)." : "Mesa giratoria detenida.", "info");
     });
 
     // Detener la mesa giratoria al hacer clic en el canvas 3D
@@ -386,7 +385,6 @@ class App {
       if (this.viewer.isTurntableActive()) {
         this.viewer.setTurntable(false);
         this.updateTurntableButtonUI(false);
-        this.showToast("Mesa giratoria detenida por clic.", "info");
       }
     });
 
@@ -461,11 +459,9 @@ class App {
   }
 
   async handleFiles(files) {
-    this.showToast(`Procesando ${files.length} archivo(s)...`, "info");
     try {
       const result = await this.loader.loadFiles(files);
       this.applyNewModel(result.object, result.name);
-      this.showToast(`Modelo "${result.name}" cargado exitosamente.`, "success");
     } catch (err) {
       console.error(err);
       this.showToast(`Error al cargar modelo: ${err.message}`, "error");
@@ -561,11 +557,9 @@ class App {
       c.classList.toggle('active-model', c.dataset.id === model.id);
     });
 
-    this.showToast(`Cargando ${model.name}...`, "info");
     try {
       const result = await this.loader.loadUrl(model.file, `${model.name} (${model.category})`);
       this.applyNewModel(result.object, result.name);
-      this.showToast(`Modelo "${model.name}" cargado exitosamente.`, "success");
     } catch (err) {
       console.error(err);
       this.showToast(`Error al cargar ${model.name}: ${err.message}`, "error");

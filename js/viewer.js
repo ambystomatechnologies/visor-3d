@@ -85,6 +85,9 @@ export class Viewer {
       this.resizeObserver.observe(this.canvas.parentElement);
     }
 
+    // Factor de intensidad lumínica configurable por el usuario
+    this.lightIntensityFactor = 1.0;
+
     // FPS Meter
     this.fpsLastTime = performance.now();
     this.fpsFrames = 0;
@@ -134,11 +137,85 @@ export class Viewer {
     this.scene.add(this.contactShadow);
   }
 
+  /**
+   * Adapta la iluminación y sombra de piso según el modo visual seleccionado
+   * (Modo Clay / Escultura utiliza iluminación de estudio neutra de alta definición)
+   */
+  updateLightsForMode(mode) {
+    if (!this.keyLight) return;
+    const factor = this.lightIntensityFactor || 1.0;
+
+    if (mode === 'clay') {
+      // Configuración de estudio neutro tipo Nomad Sculpt / ZBrush MatCap Clay
+      this.keyLight.color.setHex(0xffffff);
+      this.keyLight.intensity = 1.35 * factor;
+      this.keyLight.position.set(10, 15, 12);
+
+      this.fillLight.color.setHex(0xedf2f7); // Relleno blanco estudio puro (sin tinte cian)
+      this.fillLight.intensity = 0.65 * factor;
+      this.fillLight.position.set(-12, 6, -8);
+
+      this.rimLight.color.setHex(0xf8fafc); // Contorno blanco neutro suave
+      this.rimLight.intensity = 0.55 * factor;
+      this.rimLight.position.set(0, -10, -10);
+
+      this.ambientLight.color.setHex(0xffffff);
+      this.ambientLight.intensity = 0.55 * factor;
+
+      // Ocultar sombra en el suelo para flotación limpia de estudio
+      if (this.contactShadow) {
+        this.contactShadow.visible = false;
+      }
+      // Fondo vignette neutro tipo escultura digital
+      if (this.canvas && this.canvas.parentElement) {
+        this.canvas.parentElement.classList.add('mode-clay');
+      }
+    } else {
+      // Modo anatómico estándar con matices médicos y sombra de suelo
+      this.keyLight.color.setHex(0xfff8ee);
+      this.keyLight.intensity = 1.6 * factor;
+      this.keyLight.position.set(12, 16, 14);
+
+      this.fillLight.color.setHex(0x94d2bd); // Tono cian médico suave
+      this.fillLight.intensity = 0.8 * factor;
+      this.fillLight.position.set(-14, 8, -10);
+
+      this.rimLight.color.setHex(0x06b6d4); // Rim light cian
+      this.rimLight.intensity = 1.0 * factor;
+      this.rimLight.position.set(0, -12, -12);
+
+      this.ambientLight.color.setHex(0xffffff);
+      this.ambientLight.intensity = 0.6 * factor;
+
+      if (this.contactShadow) {
+        this.contactShadow.visible = true;
+      }
+      if (this.canvas && this.canvas.parentElement) {
+        this.canvas.parentElement.classList.remove('mode-clay');
+      }
+    }
+  }
+
   setLightIntensity(factor) {
-    if (this.ambientLight) this.ambientLight.intensity = 0.6 * factor;
-    if (this.keyLight) this.keyLight.intensity = 1.6 * factor;
-    if (this.fillLight) this.fillLight.intensity = 0.8 * factor;
-    if (this.rimLight) this.rimLight.intensity = 1.0 * factor;
+    this.lightIntensityFactor = factor;
+    this.updateLightsForMode(this.currentVisualMode);
+  }
+
+  /**
+   * Crea el material de visualización médica / hueso yeso neutro
+   * Superficie anatómica limpia y sedosa sin artefactos poligonales
+   */
+  createClayMaterial(origMat) {
+    const planes = (origMat && origMat.clippingPlanes) ? origMat.clippingPlanes : [];
+    return new THREE.MeshStandardMaterial({
+      color: 0xc4c7cb, // Tono neutro gris piedra/yeso anatómico médico suave
+      roughness: 0.65, // Rugosidad mate satinada que difumina la luz suavemente
+      metalness: 0.0,  // Sin reflejo metálico (dieléctrico anatómico)
+      flatShading: false, // Suavizado anatómico continuo
+      clippingPlanes: planes,
+      clipShadows: true,
+      side: THREE.DoubleSide
+    });
   }
 
   setModel(model) {
@@ -157,14 +234,22 @@ export class Viewer {
     this.modelPivot.add(model);
     this.modelPivot.updateMatrixWorld(true);
 
-    // Guardar materiales originales para alternar entre modos de visualización
+    // Guardar materiales originales y asegurar normales de vértice suaves continuas
     model.traverse((child) => {
       if (child.isMesh) {
+        if (child.geometry && !child.geometry.attributes.normal) {
+          child.geometry.computeVertexNormals();
+        }
         child.castShadow = true;
         child.receiveShadow = true;
         this.originalMaterials.set(child, child.material);
       }
     });
+
+    // Re-aplicar el modo visual activo si es diferente al realista
+    if (this.currentVisualMode !== 'realistic') {
+      this.setVisualMode(this.currentVisualMode);
+    }
 
     // Ajustar y centrar la cámara automáticamente en el modelo
     this.fitCameraToModel();
@@ -255,10 +340,12 @@ export class Viewer {
 
   setVisualMode(mode) {
     this.currentVisualMode = mode;
+    this.updateLightsForMode(mode);
+
     if (!this.currentModel) return;
 
     this.currentModel.traverse((child) => {
-      if (child.isMesh && !child.name.startsWith("StencilCap_")) {
+      if (child.isMesh && !child.name.startsWith("StencilCap_") && !child.name.startsWith("Stencil")) {
         const origMat = this.originalMaterials.get(child) || child.material;
 
         switch (mode) {
@@ -267,29 +354,27 @@ export class Viewer {
             break;
 
           case 'clay':
-            // Material yeso anatómico liso
-            child.material = new THREE.MeshStandardMaterial({
-              color: 0xf5f2eb,
-              roughness: 0.8,
-              metalness: 0.02,
-              clippingPlanes: origMat.clippingPlanes || [],
-              clipShadows: true,
-              side: THREE.DoubleSide
-            });
+            // Nuevo estilo de vista de escultura neutra con curvatura y cavidades (tipo Nomad Sculpt / ZBrush)
+            if (Array.isArray(origMat)) {
+              child.material = origMat.map((m) => this.createClayMaterial(m));
+            } else {
+              child.material = this.createClayMaterial(origMat);
+            }
             break;
 
           case 'xray':
             // Material translúcido estilo radiografía / rayos X
-            child.material = new THREE.MeshPhysicalMaterial({
+            const xrayConfig = {
               color: 0x38bdf8,
               transmission: 0.75,
               opacity: 0.85,
               transparent: true,
               roughness: 0.2,
               ior: 1.3,
-              clippingPlanes: origMat.clippingPlanes || [],
+              clippingPlanes: (origMat && origMat.clippingPlanes) || [],
               side: THREE.DoubleSide
-            });
+            };
+            child.material = new THREE.MeshPhysicalMaterial(xrayConfig);
             break;
 
           case 'wireframe':
@@ -297,7 +382,7 @@ export class Viewer {
             child.material = new THREE.MeshBasicMaterial({
               color: 0x06b6d4,
               wireframe: true,
-              clippingPlanes: origMat.clippingPlanes || []
+              clippingPlanes: (origMat && origMat.clippingPlanes) || []
             });
             break;
         }
