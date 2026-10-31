@@ -1,8 +1,24 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 export const SAMPLE_MODELS = [
   // --- AVES ---
+  {
+    id: 'condor',
+    name: 'Cóndor Andino',
+    category: 'Aves',
+    subtitle: 'Espécimen de cóndor andino en vuelo con envergadura alar y estructura anatómica',
+    file: 'Condor.stl',
+    size: '8.0 MB',
+    tag: 'Aves / Fauna Andina',
+    color: '#06b6d4',
+    defaultPose: {
+      position: { x: 7.22257, y: -6.33430, z: 12.84751 },
+      target: { x: -0.33233, y: 0.57815, z: 0.52820 },
+      up: { x: -0.22453, y: 0.51164, z: 0.82939 }
+    }
+  },
   {
     id: 'vertebra_ave',
     name: 'Vértebra de Ave',
@@ -130,50 +146,79 @@ export async function generateThumbnail(modelPath) {
     rim.position.set(-8, -6, -8);
     scene.add(rim);
 
-    const loader = new GLTFLoader();
-    loader.load(
-      modelPath,
-      (gltf) => {
-        const obj = gltf.scene;
-
-        // Doble cara para visualización limpia
-        obj.traverse((c) => {
-          if (c.isMesh && c.material) {
-            c.material.side = THREE.DoubleSide;
-          }
-        });
-
-        // Centrar y escalar
-        const box = new THREE.Box3().setFromObject(obj);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-
-        obj.position.sub(center);
-        if (maxDim > 0) {
-          obj.scale.multiplyScalar(7.5 / maxDim);
+    const onModelLoaded = (obj) => {
+      // Doble cara para visualización limpia
+      obj.traverse((c) => {
+        if (c.isMesh && c.material) {
+          c.material.side = THREE.DoubleSide;
         }
+      });
 
-        // Rotación agradable isométrica
-        obj.rotation.x = 0.3;
-        obj.rotation.y = 0.6;
+      // Centrar y escalar
+      const box = new THREE.Box3().setFromObject(obj);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
 
-        scene.add(obj);
-        renderer.render(scene, camera);
-
-        const dataUrl = canvas.toDataURL('image/png');
-        thumbnailCache.set(modelPath, dataUrl);
-
-        // Limpiar memoria
-        renderer.dispose();
-        resolve(dataUrl);
-      },
-      undefined,
-      (err) => {
-        console.warn(`No se pudo generar miniatura para ${modelPath}:`, err);
-        renderer.dispose();
-        resolve(null);
+      obj.position.sub(center);
+      if (maxDim > 0) {
+        obj.scale.multiplyScalar(7.5 / maxDim);
       }
-    );
+
+      // Rotación agradable isométrica
+      obj.rotation.x = 0.3;
+      obj.rotation.y = 0.6;
+
+      scene.add(obj);
+      renderer.render(scene, camera);
+
+      const dataUrl = canvas.toDataURL('image/png');
+      thumbnailCache.set(modelPath, dataUrl);
+
+      // Limpiar memoria
+      renderer.dispose();
+      resolve(dataUrl);
+    };
+
+    const cleanPath = modelPath.split('?')[0].toLowerCase();
+    if (cleanPath.endsWith('.stl')) {
+      const loader = new STLLoader();
+      loader.load(
+        modelPath,
+        (geometry) => {
+          geometry.computeVertexNormals();
+          const mat = new THREE.MeshStandardMaterial({
+            color: 0xc4c7cb,
+            roughness: 0.65,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geometry, mat);
+          const grp = new THREE.Group();
+          grp.add(mesh);
+          onModelLoaded(grp);
+        },
+        undefined,
+        (err) => {
+          console.warn(`No se pudo generar miniatura STL para ${modelPath}:`, err);
+          renderer.dispose();
+          resolve(null);
+        }
+      );
+    } else {
+      const loader = new GLTFLoader();
+      loader.load(
+        modelPath,
+        (gltf) => {
+          onModelLoaded(gltf.scene);
+        },
+        undefined,
+        (err) => {
+          console.warn(`No se pudo generar miniatura para ${modelPath}:`, err);
+          renderer.dispose();
+          resolve(null);
+        }
+      );
+    }
   });
 }

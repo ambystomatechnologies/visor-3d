@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=4.0">
+  <link rel="stylesheet" href="css/styles.css?v=4.1">
 
   <!-- Favicon e Identidad Visual Oficial -->
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=20260925_01">
@@ -51,7 +51,7 @@
 
       <div class="header-actions">
         <!-- Botón de Mesa Giratoria en la barra superior (a la izquierda de Cargar Modelo 3D) -->
-        <button id="btn-turntable" class="btn btn-secondary active" title="Rotar la muestra 360° continuamente (haz clic en la pantalla o vuelve a presionar para detener)">
+        <button id="btn-turntable" class="btn btn-secondary" title="Rotar la muestra 360° continuamente (haz clic en la pantalla o vuelve a presionar para detener)">
           <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
           </svg>
@@ -336,8 +336,8 @@
           <div class="footer-group">
             <span class="footer-label">Modo Visual:</span>
             <div class="btn-group-pill">
-              <button class="btn-pill active" data-mode="realistic" title="Material con texturas PBR completas">Realista</button>
-              <button class="btn-pill" data-mode="clay" title="Modo yeso/escultura neutra">Yeso</button>
+              <button class="btn-pill" data-mode="realistic" title="Material con texturas PBR completas">Realista</button>
+              <button class="btn-pill active" data-mode="clay" title="Modo yeso/escultura neutra">Yeso</button>
               <button class="btn-pill" data-mode="xray" title="Modo Rayos X didáctico">Rayos X</button>
               <button class="btn-pill" data-mode="wireframe" title="Ver estructura de polígonos/malla">Malla</button>
             </div>
@@ -353,7 +353,7 @@
           <div class="footer-divider"></div>
 
           <div class="footer-group model-info-group">
-            <span id="info-model-name" class="info-tag">Modelo: Vértebra de Muestra</span>
+            <span id="info-model-name" class="info-tag">Modelo: Cóndor Andino</span>
             <span id="info-poly-count" class="info-tag">Polígonos: Calculando...</span>
             <span id="info-fps" class="info-tag fps">60 FPS</span>
           </div>
@@ -502,6 +502,6 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Scripts principales como Módulos ES -->
-  <script type="module" src="js/app.js?v=4.0"></script>
+  <script type="module" src="js/app.js?v=4.1"></script>
 </body>
 </html>

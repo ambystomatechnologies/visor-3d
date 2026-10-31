@@ -75,9 +75,39 @@ export class ModelLoader {
   }
 
   /**
-   * Carga un modelo directamente desde una URL relativa (por ejemplo ./vertebra_muestra.glb)
+   * Carga un modelo directamente desde una URL relativa (por ejemplo ./vertebra_muestra.glb o ./Condor.stl)
    */
   async loadUrl(url, name = "Modelo 3D") {
+    const cleanUrl = url.split('?')[0].toLowerCase();
+
+    if (cleanUrl.endsWith('.stl')) {
+      const loader = new STLLoader();
+      return new Promise((resolve, reject) => {
+        loader.load(
+          url,
+          (geometry) => {
+            geometry.computeVertexNormals();
+            const material = new THREE.MeshStandardMaterial({
+              color: 0xf3eee3,
+              roughness: 0.6,
+              metalness: 0.05,
+              side: THREE.DoubleSide
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            const group = new THREE.Group();
+            group.add(mesh);
+            this.normalizeModel(group);
+            resolve({
+              object: group,
+              name: name
+            });
+          },
+          undefined,
+          (err) => reject(new Error("Error al leer archivo STL médico: " + err.message))
+        );
+      });
+    }
+
     const loader = new GLTFLoader();
     return new Promise((resolve, reject) => {
       loader.load(

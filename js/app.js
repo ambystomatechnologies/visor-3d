@@ -1,8 +1,8 @@
-import { Viewer } from './viewer.js?v=4.0';
-import { Slicer } from './slicer.js?v=4.0';
-import { ModelLoader } from './loader.js?v=4.0';
-import { createSampleBone } from './sampleBone.js?v=4.0';
-import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.0';
+import { Viewer } from './viewer.js?v=4.1';
+import { Slicer } from './slicer.js?v=4.1';
+import { ModelLoader } from './loader.js?v=4.1';
+import { createSampleBone } from './sampleBone.js?v=4.1';
+import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.1';
 
 class App {
   constructor() {
@@ -10,7 +10,7 @@ class App {
     this.viewer = new Viewer(this.dom.canvas);
     this.slicer = new Slicer(this.viewer);
     this.loader = new ModelLoader();
-    this.currentSampleId = 'vertebra_ave';
+    this.currentSampleId = 'condor';
 
     // Exponer instancias para inspección global
     window.app = this;
@@ -21,13 +21,13 @@ class App {
     this.setupDragAndDrop();
     this.initSampleModelsGallery();
 
-    // Activar estado visual de Mesa Giratoria por defecto
-    this.updateTurntableButtonUI(true);
+    // Mesa Giratoria desactivada por defecto para mantener la postura exacta requerida
+    this.updateTurntableButtonUI(false);
 
     // Activar modo de transparencia dinámica al manipular sliders
     this.setupSliderTransparencyMode();
 
-    // Cargar modelo inicial de vértebra
+    // Cargar modelo inicial de Cóndor Andino en vista Yeso
     this.loadSampleBoneModel();
 
     // Iniciar bucle de renderizado fluido a 60fps
@@ -558,6 +558,11 @@ class App {
     });
 
     try {
+      if (model.defaultPose) {
+        this.viewer.setDefaultCameraPose(model.defaultPose);
+      } else {
+        this.viewer.setDefaultCameraPose(null);
+      }
       const result = await this.loader.loadUrl(model.file, `${model.name} (${model.category})`);
       this.applyNewModel(result.object, result.name);
     } catch (err) {
@@ -567,11 +572,19 @@ class App {
   }
 
   async loadSampleBoneModel() {
-    const defaultModel = SAMPLE_MODELS[0]; // Vértebra de Ave
+    const defaultModel = SAMPLE_MODELS.find((m) => m.id === 'condor') || SAMPLE_MODELS[0];
     this.loadSampleModel(defaultModel);
   }
 
   applyNewModel(model, name) {
+    if (name.toLowerCase().includes('condor') && !this.viewer.defaultCameraPose) {
+      this.viewer.setDefaultCameraPose({
+        position: { x: 7.22257, y: -6.33430, z: 12.84751 },
+        target: { x: -0.33233, y: 0.57815, z: 0.52820 },
+        up: { x: -0.22453, y: 0.51164, z: 0.82939 }
+      });
+    }
+
     this.viewer.setModel(model);
     this.slicer.updateModelBounds();
     this.slicer.applyClippingToMaterials();

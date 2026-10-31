@@ -6,7 +6,8 @@ export class Viewer {
     this.canvas = canvas;
     this.currentModel = null;
     this.originalMaterials = new Map();
-    this.currentVisualMode = 'realistic';
+    this.currentVisualMode = 'clay'; // Estilo de vista "Yeso" activado por defecto
+    this.defaultCameraPose = null;
 
     // 1. Escena
     this.scene = new THREE.Scene();
@@ -68,12 +69,13 @@ export class Viewer {
       RIGHT: THREE.MOUSE.PAN
     };
 
-    // Mesa Giratoria (Auto-rotación 360° activada por defecto al abrir)
-    this.controls.autoRotate = true;
+    // Mesa Giratoria (desactivada por defecto al abrir para preservar la postura exacta del modelo)
+    this.controls.autoRotate = false;
     this.controls.autoRotateSpeed = 2.5;
 
     // 5. Luces de estudio anatómico
     this.setupLighting();
+    this.updateLightsForMode('clay');
 
     // 6. Plataforma / Sombra de contacto
     this.setupContactShadow();
@@ -309,9 +311,40 @@ export class Viewer {
     return { ...this.modelRotation };
   }
 
+  setDefaultCameraPose(pose) {
+    this.defaultCameraPose = pose ? {
+      position: new THREE.Vector3(pose.position.x, pose.position.y, pose.position.z),
+      target: new THREE.Vector3(pose.target.x, pose.target.y, pose.target.z),
+      up: new THREE.Vector3(pose.up.x, pose.up.y, pose.up.z)
+    } : null;
+  }
+
+  applyDefaultCameraPose() {
+    if (!this.defaultCameraPose) return false;
+    this.camera.up.copy(this.defaultCameraPose.up);
+    this.camera.position.copy(this.defaultCameraPose.position);
+    this.controls.target.copy(this.defaultCameraPose.target);
+    this.camera.lookAt(this.controls.target);
+    this.controls.update();
+
+    if (this.contactShadow && this.currentModel) {
+      const box = new THREE.Box3().setFromObject(this.currentModel);
+      this.contactShadow.position.y = box.min.y - 0.05;
+    }
+
+    this.render();
+    return true;
+  }
+
   fitCameraToModel() {
     if (!this.currentModel) return;
 
+    if (this.defaultCameraPose) {
+      this.applyDefaultCameraPose();
+      return;
+    }
+
+    this.camera.up.set(0, 1, 0);
     const box = new THREE.Box3().setFromObject(this.currentModel);
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
