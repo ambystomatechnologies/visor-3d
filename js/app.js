@@ -1,8 +1,8 @@
-import { Viewer } from './viewer.js?v=4.1';
-import { Slicer } from './slicer.js?v=4.1';
-import { ModelLoader } from './loader.js?v=4.1';
-import { createSampleBone } from './sampleBone.js?v=4.1';
-import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.1';
+import { Viewer } from './viewer.js?v=4.2';
+import { Slicer } from './slicer.js?v=4.2';
+import { ModelLoader } from './loader.js?v=4.2';
+import { createSampleBone } from './sampleBone.js?v=4.2';
+import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.2';
 
 class App {
   constructor() {
@@ -579,9 +579,9 @@ class App {
   applyNewModel(model, name) {
     if (name.toLowerCase().includes('condor') && !this.viewer.defaultCameraPose) {
       this.viewer.setDefaultCameraPose({
-        position: { x: 7.22257, y: -6.33430, z: 12.84751 },
-        target: { x: -0.33233, y: 0.57815, z: 0.52820 },
-        up: { x: -0.22453, y: 0.51164, z: 0.82939 }
+        position: { x: -7.98746, y: 2.46282, z: 1.81975 },
+        target: { x: 0.11756, y: 0.70313, z: 0.22103 },
+        up: { x: 0.15532, y: -0.07979, z: 0.98464 }
       });
     }
 
