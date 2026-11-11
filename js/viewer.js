@@ -6,7 +6,7 @@ export class Viewer {
     this.canvas = canvas;
     this.currentModel = null;
     this.originalMaterials = new Map();
-    this.currentVisualMode = 'clay'; // Estilo de vista "Yeso" activado por defecto
+    this.currentVisualMode = 'realistic'; // Estilo de vista "Realista" activado por defecto
     this.defaultCameraPose = null;
 
     // 1. Escena
@@ -69,13 +69,13 @@ export class Viewer {
       RIGHT: THREE.MOUSE.PAN
     };
 
-    // Mesa Giratoria (desactivada por defecto al abrir para preservar la postura exacta del modelo)
-    this.controls.autoRotate = false;
+    // Mesa Giratoria (Auto-rotación 360° activada por defecto al abrir)
+    this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 2.5;
 
     // 5. Luces de estudio anatómico
     this.setupLighting();
-    this.updateLightsForMode('clay');
+    this.updateLightsForMode('realistic');
 
     // 6. Plataforma / Sombra de contacto
     this.setupContactShadow();

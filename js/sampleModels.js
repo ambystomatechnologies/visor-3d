@@ -5,6 +5,16 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 export const SAMPLE_MODELS = [
   // --- AVES ---
   {
+    id: 'vertebra_ave',
+    name: 'Vértebra de Ave',
+    category: 'Aves',
+    subtitle: 'Vértebra de ave con foramen vertebral y tejido óseo ligero/neumatizado',
+    file: 'Muestras/vertebra de ave.glb',
+    size: '830 KB',
+    tag: 'Aves / Ornitología',
+    color: '#06b6d4'
+  },
+  {
     id: 'condor',
     name: 'Cóndor Andino',
     category: 'Aves',
@@ -18,16 +28,6 @@ export const SAMPLE_MODELS = [
       target: { x: 0.11756, y: 0.70313, z: 0.22103 },
       up: { x: 0.15532, y: -0.07979, z: 0.98464 }
     }
-  },
-  {
-    id: 'vertebra_ave',
-    name: 'Vértebra de Ave',
-    category: 'Aves',
-    subtitle: 'Vértebra de ave con foramen vertebral y tejido óseo ligero/neumatizado',
-    file: 'Muestras/vertebra de ave.glb',
-    size: '830 KB',
-    tag: 'Aves / Ornitología',
-    color: '#06b6d4'
   },
   {
     id: 'craneo_pajaro',

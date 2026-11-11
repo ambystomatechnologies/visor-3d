@@ -1,8 +1,8 @@
-import { Viewer } from './viewer.js?v=4.2';
-import { Slicer } from './slicer.js?v=4.2';
-import { ModelLoader } from './loader.js?v=4.2';
-import { createSampleBone } from './sampleBone.js?v=4.2';
-import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.2';
+import { Viewer } from './viewer.js?v=4.3';
+import { Slicer } from './slicer.js?v=4.3';
+import { ModelLoader } from './loader.js?v=4.3';
+import { createSampleBone } from './sampleBone.js?v=4.3';
+import { SAMPLE_MODELS, generateThumbnail } from './sampleModels.js?v=4.3';
 
 class App {
   constructor() {
@@ -10,7 +10,7 @@ class App {
     this.viewer = new Viewer(this.dom.canvas);
     this.slicer = new Slicer(this.viewer);
     this.loader = new ModelLoader();
-    this.currentSampleId = 'condor';
+    this.currentSampleId = 'vertebra_ave';
 
     // Exponer instancias para inspección global
     window.app = this;
@@ -21,13 +21,13 @@ class App {
     this.setupDragAndDrop();
     this.initSampleModelsGallery();
 
-    // Mesa Giratoria desactivada por defecto para mantener la postura exacta requerida
-    this.updateTurntableButtonUI(false);
+    // Activar estado visual de Mesa Giratoria por defecto
+    this.updateTurntableButtonUI(true);
 
     // Activar modo de transparencia dinámica al manipular sliders
     this.setupSliderTransparencyMode();
 
-    // Cargar modelo inicial de Cóndor Andino en vista Yeso
+    // Cargar modelo inicial de Vértebra de Ave en vista Realista
     this.loadSampleBoneModel();
 
     // Iniciar bucle de renderizado fluido a 60fps
@@ -572,7 +572,7 @@ class App {
   }
 
   async loadSampleBoneModel() {
-    const defaultModel = SAMPLE_MODELS.find((m) => m.id === 'condor') || SAMPLE_MODELS[0];
+    const defaultModel = SAMPLE_MODELS.find((m) => m.id === 'vertebra_ave') || SAMPLE_MODELS[0];
     this.loadSampleModel(defaultModel);
   }
 
